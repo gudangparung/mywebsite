@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<!-- saved from url= @benyoriki -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>DMS v7.0</title>
+
+        <!-- Bootstrap Core CSS -->
+        <link href="./Form Login Aplikasi_files/bootstrap.min.css" rel="stylesheet">
+
+        <!-- MetisMenu CSS -->
+        <link href="./Form Login Aplikasi_files/metisMenu.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="./Form Login Aplikasi_files/startmin.css" rel="stylesheet">
+
+        <!-- Custom Fonts -->
+        <link href="./Form Login Aplikasi_files/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+        <link rel="icon" type="image/png" href="hd.png">
+
+
+      
+    </head>
+    <body>
+	
+
+	<!-- Typing Indicator -->
+	
+	
+
+
+<!-- Suara pesan terkirim -->
+<audio id="soundSend" src="send.mp3" preload="auto"></audio>
+
+<!-- Suara pesan diterima -->
+<audio id="soundReceive" src="receive.mp3" preload="auto"></audio>
+	<!-- AUDIO (harus di dalam body) -->
+<audio id="bgm" src="musik.mp3" loop></audio>
+
+
+	
+
+<!-- ===== CHATBOT MODERN FINAL (HTML + CSS + JS) ===== -->
+
+<div id="chat-btn" title="Buka Chat">💬</div>
+
+
+<!-- Jendela Chat -->
+<div id="chat-window" aria-hidden="true" role="dialog" aria-label="Chatbot">
+  <div id="chat-header">
+  
+    <img id="bot-avatar" src="cw.png" alt="Bot">
+    <div style="flex:1">
+      Tim IT Pusat Depo Panu 2025
+      <div style="font-size:12px; opacity:0.9; margin-top:4px">Inara Ruslanudin • Online</div>
+    </div>
+    <button id="chat-close" title="Tutup" style="background:transparent;border:none;color:white;font-size:18px;cursor:pointer">✕</button>
+  </div>
+  
+
+  <div id="chat-body" aria-live="polite"></div>
+
+  <div class="typing-indicator" id="typing-ind">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </div>
+
+  <div id="chat-input-area">
+    <input type="text" id="chat-input" placeholder="Ketik pesan..." autocomplete="off" aria-label="Ketik pesan">
+    <button id="chat-send" title="Kirim">➤</button>
+  </div>
+</div>
+
+<style>
+/* ===== FLOAT BUTTON MODERN ===== */
+
+
+
+#chat-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 65px;
+    height: 65px;
+    background: linear-gradient(135deg,#28a745,#0f7b32);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; color: white; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    z-index: 9999; transition: transform .25s ease, box-shadow .25s ease;
+}
+#chat-btn:hover { transform: scale(1.12) rotate(6deg); box-shadow: 0 14px 36px rgba(0,0,0,0.45); }
+
+/* ===== CHAT WINDOW ===== */
+#chat-window {
+    position: fixed; bottom: 100px; right: 25px;
+    width: 360px; height: 520px; background: rgba(255,255,255,0.98);
+    backdrop-filter: blur(6px); border-radius: 16px;
+    display: none; flex-direction: column; overflow: hidden; z-index: 9999;
+    box-shadow: 0 14px 48px rgba(0,0,0,0.45);
+    transform-origin: bottom right;
+}
+
+/* appear animation */
+#chat-window.show { display:flex; animation: popup .32s cubic-bezier(.2,.9,.2,1); }
+@keyframes popup { from{transform: scale(.86) translateY(8px); opacity:0} to{transform: scale(1) translateY(0); opacity:1} }
+
+/* header */
+#chat-header {
+    background: linear-gradient(135deg,#28a745,#128d40);
+    padding: 12px; color: white; display:flex; gap:12px; align-items:center;
+    border-bottom: 1px solid rgba(255,255,255,0.12); font-weight:600;
+}
+#chat-header img { width:44px; height:44px; border-radius:50%; border:2px solid rgba(255,255,255,0.18); }
+
+/* breathing avatar (subtle scale) */
+#bot-avatar { animation: breathing 4s ease-in-out infinite; transform-origin:center; }
+@keyframes breathing {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* body */
+#chat-body { flex:1; padding:14px; overflow-y:auto; background: linear-gradient(#f6fbfa,#f0f6f5); }
+
+/* bubble container */
+.msg { display:flex; gap:10px; margin-bottom:12px; align-items:flex-start; animation: bubbleIn .36s ease; }
+@keyframes bubbleIn { from{opacity:0; transform: translateY(8px) scale(.98)} to{opacity:1; transform: translateY(0) scale(1)} }
+
+/* avatar inside msg */
+.msg img { width:32px; height:32px; border-radius:50%; }
+
+/* bubble style */
+.bubble { padding:10px 14px; border-radius:14px; max-width:75%; font-size:14px; line-height:1.4; box-shadow: 0 2px 8px rgba(16,24,32,0.06); transition: transform .18s ease; }
+
+/* iPhone-like bubble subtle 3d: small pseudo-shadow and scale on appear */
+.bot .bubble { background:#e6ffea; border:1px solid #d3f4d6; transform-origin:left center; }
+.user { flex-direction: row-reverse; }
+.user .bubble { background: linear-gradient(180deg,#cfeffd,#a8ddf8); border:1px solid #8fc8e9; color:#063447; transform-origin:right center; }
+
+/* gentle pop on hover (for tactile effect) */
+.msg:hover .bubble { transform: translateY(-2px); }
+
+/* input area */
+#chat-input-area { display:flex; border-top:1px solid #e6eef0; padding:8px; gap:8px; background:linear-gradient(#ffffff,#fafefe); }
+#chat-input { flex:1; padding:10px 12px; border-radius:10px; border:1px solid #e0eef3; outline:none; font-size:14px; }
+#chat-input:focus { box-shadow:0 6px 18px rgba(15,123,50,0.08); border-color:#bfe6d3; }
+#chat-send { background:#28a745; color:white; border:none; padding:10px 14px; border-radius:10px; cursor:pointer; font-size:16px; transition: transform .12s ease; }
+
+/* tiny shake animation for send button when clicked */
+@keyframes smallShake {
+  0% { transform: translateX(0) }
+  25% { transform: translateX(-4px) }
+  50% { transform: translateX(4px) }
+  75% { transform: translateX(-2px) }
+  100% { transform: translateX(0) }
+}
+#chat-send.shake { animation: smallShake .28s ease; }
+
+/* typing indicator */
+.typing-indicator { display:flex; gap:6px; align-items:center; padding-left:46px; margin-bottom:8px; color:#6b6f72; font-size:13px; }
+.typing-indicator .dot { width:8px; height:8px; background:#28a745; border-radius:50%; display:inline-block; animation: bounce .9s infinite; opacity:.9; }
+.typing-indicator .dot:nth-child(2) { animation-delay:.12s; }
+.typing-indicator .dot:nth-child(3) { animation-delay:.24s; }
+@keyframes bounce { 0%,80%,100% {transform: translateY(0); opacity:.35} 40% { transform: translateY(-6px); opacity:1 } }
+
+/* small responsiveness */
+@media (max-width:420px){
+  #chat-window { right: 12px; left: 12px; width: auto; bottom: 80px; height: 70vh; }
+  #chat-btn { right:12px; bottom:18px; }
+}
+
+
+</style>
+
+<script>
+(function(){
+
+  // elements
+  const btn = document.getElementById('chat-btn');
+  const win = document.getElementById('chat-window');
+  const closeBtn = document.getElementById('chat-close');
+  const body = document.getElementById('chat-body');
+  const input = document.getElementById('chat-input');
+  const send = document.getElementById('chat-send');
+  const typing = document.getElementById('typing-ind');
+  const botAvatar = document.getElementById('bot-avatar');
+
+  // settings
+  let aiMode = false;            // kalau true -> ketik 1 huruf auto-send (dengan debounce)
+  const aiDebounce = 700;       // ms jeda sebelum auto-send
+  let aiTimer = null;
+
+  // helper: add message
+  function addMessage(text, sender='bot', opts={}) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + sender;
+
+      const avatar = sender==='bot' ? 'cw.png' : 'hi.png';
+      // --- FORMAT BOLD UNTUK *teks* ---
+    let formatted = escapeHtml(text);
+    formatted = formatted.replace(/\*(.*?)\*/g, "<strong style='color:#000;'>$1</strong>");
+
+    const bubbleHtml = `<div class="bubble">${formatted}</div>`;
+    div.innerHTML = `<img src="${avatar}" alt="${sender} avatar">` + bubbleHtml;
+
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight - 10;
+}
+  // ===== PLAY SOUND (iMessage style) =====
+function playSound(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.currentTime = 0;
+    el.play().catch(()=>{});
+}
+
+// ===== TRIGGER SUARA SAAT KIRIM =====
+send.addEventListener("click", () => {
+    const t = input.value.trim();
+    if (!t) return;
+    playSound("soundSend");   // 🔊 Suara SEND
+});
+
+// ===== TRIGGER SUARA SAAT BOT BALAS =====
+const originalBotReply = botReply;  // simpan versi awal
+
+botReply = function(userText) {
+    const reply = generateReply(userText);
+
+    showTyping(true);
+
+    const typingTime = Math.min(2500, Math.max(700, reply.length * 45));
+
+    setTimeout(() => {
+        showTyping(false);
+        addMessage(reply, "bot");
+        playSound("soundReceive");   // 🔊 Suara RECEIVE
+    }, typingTime);
+};
+
+  // escape HTML to avoid injection
+  function escapeHtml(unsafe) {
+      return (unsafe+'').replace(/[&<>"'\/]/g, function(s) {
+          const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;'};
+          return map[s];
+      });
+  }
+
+  // dummy notification sound (optional): create small beep using web audio
+  function playBeep(){
+      try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type='sine'; o.frequency.value=880;
+          g.gain.value = 0.02;
+          o.connect(g); g.connect(ctx.destination);
+          o.start(); setTimeout(()=>{ o.stop(); ctx.close(); }, 90);
+      } catch(e){}
+  }
+
+  // show typing indicator
+  function showTyping(show=true){
+      typing.style.display = show ? 'flex' : 'none';
+      body.scrollTop = body.scrollHeight;
+  }
+
+  // generate reply (use your intelligent function; slightly improved)
+  function generateReply(text){
+      text = (text||'').toLowerCase();
+
+      if (!text) return "Halo, ada yang bisa saya bantu?";
+
+      if (/(^|\s)(halo|hai|hello|hallo|pagi|siang|malam)(\s|$)/.test(text)) {
+          return "Hai! 👋 Ada yang bisa saya bantu hari ini? Jelaskan kendala Anda sedikit saja.";
+      }
+      if (text.includes("tidak bisa login") || text.includes("gagal login") || text.includes("login error")) {
+          return "Coba cek:\n1) Username/password benar\n2) Caps Lock mati\n3) Koneksi internet stabil\nJika masih error, kirim screenshot atau pesan errornya.";
+      }
+      if (text.includes("lupa password") || text.includes("reset password")) {
+          return "Untuk reset password, silakan hubungi admin pusat atau kirim email ke hermawanriki@gmail.com. Sertakan nama lengkap & ID.";
+      }
+      if (text.includes("cek id") || text.includes("id saya")) {
+          return "Untuk Username: *RIKI HERMAWAN*\nPassword: *123456*\nSilakan login.✔️\n";
+      }
+      if (text.includes("admin tidak bisa dihubungi") || text.includes("admin error")) {
+          return "Mohon maaf. Sementara, kirim email ke hermawanriki@gmail.com dan lampirkan screenshot error agar cepat ditangani.";
+      }
+      if (text.includes("terima kasih") || text.includes("terimakasih") || text.includes("makasih")) {
+          return "Sama-sama 😊 Senang bisa membantu. Kalau ada lagi, beri tahu saya ya.";
+      }
+
+      // fallback more helpful
+      return "Terima kasih pesannya! 🙏\nPesan Anda sudah kami terima dan akan diteruskan ke operator. Jika ada detail tambahan, kirimkan sekarang.";
+  }
+
+  // bot reply with typing delay
+  function botReply(userText){
+      const reply = generateReply(userText);
+
+      showTyping(true);
+      // simulate typing speed 45ms per character, min 700ms max 2500ms
+      const typingTime = Math.min(2500, Math.max(700, reply.length * 45));
+
+      setTimeout(()=>{
+          showTyping(false);
+          addMessage(reply, 'bot');
+          playBeep();
+      }, typingTime);
+  }
+
+  // send message (user)
+  function sendMessageAuto(text){
+      if (!text || !text.trim()) return;
+      addMessage(text.trim(), 'user');
+      input.value = '';
+      // small tactile effect on send
+      send.classList.add('shake');
+      setTimeout(()=> send.classList.remove('shake'), 300);
+      // bot reply shortly
+      setTimeout(()=> botReply(text), 120);
+  }
+
+  // manual send handler
+  send.addEventListener('click', ()=>{
+      const t = input.value.trim();
+      if (!t) return;
+      sendMessageAuto(t);
+  });
+
+  // Enter key send
+  input.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter') {
+          e.preventDefault();
+          const t = input.value.trim();
+          if (!t) return;
+          sendMessageAuto(t);
+      }
+  });
+
+  // AI mode: when user types first char and pauses -> auto send (debounced)
+  input.addEventListener('input', ()=>{
+      const value = input.value;
+      // clear previous timer
+      if (aiTimer) { clearTimeout(aiTimer); aiTimer = null; }
+
+      if (!aiMode) return;
+
+      if (value.length === 1) {
+          // user typed first character -> wait a bit then auto-send (if user doesn't continue typing)
+          aiTimer = setTimeout(()=>{
+              // if still only 1 char or user hasn't added more, send it
+              const cur = input.value.trim();
+              if (cur.length >= 1) {
+                  sendMessageAuto(cur);
+              }
+          }, aiDebounce);
+      } else if (value.length > 1) {
+          // if user keeps typing, we don't auto-send; but if they stop typing for longer, we can optionally send full message
+          aiTimer = setTimeout(()=>{
+              const cur = input.value.trim();
+              if (cur.length >= 1) {
+                  // optional: auto-send when user pauses after typing full phrase
+                  // Comment next line if you only want 1-char trigger
+                  // sendMessageAuto(cur);
+              }
+          }, 1200);
+      }
+  });
+
+  // open / close
+  btn.addEventListener('click', ()=>{
+      win.classList.toggle('show');
+      const shown = win.classList.contains('show');
+      win.setAttribute('aria-hidden', !shown);
+      if (shown) input.focus();
+  });
+  closeBtn.addEventListener('click', ()=> { win.classList.remove('show'); win.setAttribute('aria-hidden', 'true'); });
+
+  // small accessibility: ESC closes
+  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') { win.classList.remove('show'); win.setAttribute('aria-hidden', 'true'); } });
+
+  // initial welcome message
+  setTimeout(()=> {
+    addMessage("Halo! perkenalkan nama saya *Inara Ruslanudin*.", 'bot');
+    playSound("soundReceive");   // 🔊 Tambahkan ini
+}, 3600);
+
+  
+  // initial welcome message
+  setTimeout(()=> {
+    addMessage("Saya adalah asisten IT Pusat. Ketik 'cek id' jika ingin lihat akun, atau sampaikan keluhan Anda.", 'bot');
+    playSound("soundReceive");   // 🔊 Tambahkan ini juga
+}, 5800);
+
+
+
+})();
+</script>
+
+
+
+
+
+	
+	
+
+
+<script>
+    document.addEventListener("click", function () {
+        const audio = document.getElementById("bgm");
+		audio.volume = 0.4; // atur volume (60%)
+        audio.play();
+    }, { once: true }); 
+</script>
+	
+
+<div id="wrapper">
+
+            <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                    <div class="login-panel panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Silahkan Log In</h3>
+							<style>
+    .login-panel {
+        background: rgba(255,255,255,0.85);
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    }
+</style>
+                        </div>
+                        <div class="panel-body">
+                            <form id="loginForm">
+    <fieldset>
+        <div class="form-group">
+            <input class="form-control" id="username" type="text" placeholder="Username" autofocus="">
+        </div>
+
+        <div class="form-group">
+            <input class="form-control" id="password" type="password" placeholder="Password">
+        </div>
+
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" value="Remember Me"> Remember Me
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-block">Login</button>
+    </fieldset>
+</form>
+
+<!-- NOTIFIKASI -->
+<div id="notif" style="
+    margin-top:10px;
+    display:none;
+    padding:10px;
+    background:#ffdddd;
+    color:#b30000;
+    border:1px solid #ff7b7b;
+    border-radius:5px;
+    text-align:center;">
+</div>
+
+<script>
+// VALIDASI LOGIN
+document.getElementById("loginForm").addEventListener("submit", function(e){
+    e.preventDefault(); // cegah reload halaman
+
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const notif = document.getElementById("notif");
+
+    // Akun valid
+    const validUser = "RIKI HERMAWAN";
+    const validPass = "123456";
+
+    if (user === validUser && pass === validPass) {
+
+        notif.style.display = "none"; // sembunyikan notif
+        // Arahkan ke halaman tujuan
+        window.location.href = "group.html";
+
+    } else {
+
+        notif.style.display = "block";
+        notif.innerText = "❌ Username atau Password salah!";
+    }
+});
+</script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- jQuery -->
+        <script src="./Form Login Aplikasi_files/jquery.min.js.download"></script>
+
+        <!-- Bootstrap Core JavaScript -->
+        <script src="./Form Login Aplikasi_files/bootstrap.min.js.download"></script>
+
+        <!-- Metis Menu Plugin JavaScript -->
+        <script src="./Form Login Aplikasi_files/metisMenu.min.js.download"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="./Form Login Aplikasi_files/startmin.js.download"></script>
+
+    
+
+</body></html>
